@@ -14,6 +14,8 @@ To save tokens I'll probably clear my context and start a new chat. Questions fr
 
 Full text of initial prompt
 
+```
+
 I’m going to create a model to classify areas of the City of Cape Town as sparsely or densely populated. 
 I want to output a hex map of the city, with areas colour-coded on a 5-point scale of sparsity / density.
 The assumption is that high volumes of service requests will originate from densely-populated areas.
@@ -101,6 +103,8 @@ Create an interactive map that loads in browser window showing the hex shapes co
 The user should be able to hover over a hex to see a tooltip with the official_suburb name, and the number of service requests
 The user should be able to include or exclude specific service request codes with checkboxes 
 
+```
+
 ---
 
 ## Review of the Opus 4.5 output
@@ -143,15 +147,22 @@ Then I tested it by manually typing `FROGGY!,FROGGY!,FROGGY!` to the first line 
 
 Oh and then it lied to me about the problem. Twice. But we got there in the end.
 
-It happened because Pandas will silently expand the dataframe on encountering this kind of failure. The initial code written by Opus4.5 did not account for this.
+It happened because Pandas will SILENTLY expand the dataframe on encountering this kind of failure. The initial code written by Opus4.5 did not account for this.
 
 We've handled it by adding explicit column expectations. It's rustic but readable and unambiguous.
 :frog: :frog: :frog:
 
 ---
 
-#### Sample records of validation issues
+#### Timestamp checks had issues
+
+I also tested the timestamp checks by messing with a row of data. The validation check couldn't pick up a creation date in 2027 because a typo in the timestamp meant it didn't parse, and was SILENTLY COERCED to NaT, and then silently evaded all my testing. 
+Additional step now added to check the timestamp parsing.
+
+---
+
+#### Sample records were incomplete
 
 I was supposed to get some sample lines of any problematic data, so I can see it for myself. 
 Unfortunately Opus4.5 wrote something that only looks at out of bounds coordinates.
-We've updated it to look at ALL data validation checks, print a short table of records that fail validation per type of failure (and grouped lat/long tests together because they generally fail together).
+I've updated it to look at ALL data validation checks, print a short table of records that fail validation per type of failure (and grouped lat/long tests together because they generally fail together).
