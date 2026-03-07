@@ -1,4 +1,5 @@
 ## AI Work Summary
+
 This document summarises how I used AI in my assignment. 
 
 I started by opening all the data files and just visually inspecting them. I took notes on the side about what the structure seemed to be, and what methods I might use to test those assumptions, and test for common data quality issues that I know from long, hard-earned, often stressful experience.
@@ -9,10 +10,9 @@ I spent almost an hour crafting my prompt, I find that front-loading that effort
 My dashboard says that one mega prompt cost about 2.9m tokens, or $2.98. Well worth it IMO.
 To save tokens I'll probably clear my context and start a new chat. Questions from here are likely to be much smaller.
 
-
 ### Initial prompt
-<details>
-<summary>Full text of initial prompt</summary>
+
+Full text of initial prompt
 
 I’m going to create a model to classify areas of the City of Cape Town as sparsely or densely populated. 
 I want to output a hex map of the city, with areas colour-coded on a 5-point scale of sparsity / density.
@@ -24,6 +24,7 @@ PART 1: Input data
 Data source 1: the city’s service request data, by level 8 H3 Geo hex - see raw_data/sr_hex.csv
 
 Data source 2: The polygons and index values for the H3 Geo hexes - see raw_data/hex_polygons.geojson
+
 - ‘h3_level8_index’ in sr_hex.csv links to ‘index’ in hex_polygons.geojson
 - example index value: ‘88ad361801fffff’
 - if the service request does not have valid geolocation data, the h3_level8_index will be 0
@@ -46,6 +47,7 @@ longitude - float (double precision, 14 decimal places) values between -35 and -
 h3_level8_index - string, 15 alphanumeric OR 0, not nullable.
 
 Suggested data cleaning checks for the sr_hex.csv data:
+
 - data type discrepancies in columns
 - parsing issues and malformed lines (eg; unescaped commas in string fields)
 - invalid coordinates (out of bounds)
@@ -53,13 +55,12 @@ Suggested data cleaning checks for the sr_hex.csv data:
 - timestamps not showing timezone as ‘+02:00’
 
 Show a report of 
+
 - the null rates per field
 - min and max values
 - malformed lines
 
 Print a sample of the malformed lines for inspection
-
-
 
 PART 2: Exploration of data
 
@@ -93,20 +94,23 @@ Output 5:
 Print a 3d bar chart showing the number of service requests (y-axis) by suburb (x-axis) by code (z-axis)
 Colourise with a colourblind-friendly palette with high values in hot colours, low values in cool colors
 
-
 PART 3. Classification and presentation
 
 Output 1: 
 Create an interactive map that loads in browser window showing the hex shapes colorized by the related service request data
 The user should be able to hover over a hex to see a tooltip with the official_suburb name, and the number of service requests
 The user should be able to include or exclude specific service request codes with checkboxes 
-</details>
----
-### Review of the Opus 4.5 output
 
-Broadly I like the early parts of the output. I'll review more here, but for now I'm going to commit all this. BRB.
+---
+
+## Review of the Opus 4.5 output
+
+---
+
+#### Unhelpful grouping of data validation tests
 
 The initial build produced this data test that I found a bit useless - if you group the out of bounds coordinates with the null coordinates that gives you nothing actionable: 
+
 ```
     invalid_lat = df[
         (df['latitude'] < -35) | (df['latitude'] > -32) |
@@ -114,4 +118,40 @@ The initial build produced this data test that I found a bit useless - if you gr
     ]
     issues['invalid_latitude'] = len(invalid_lat)
 ```
+
 So I've split that data check into null_lat and oob_lat
+
+---
+
+#### Timezone bad assumption
+
+Another data test issue - the 44 out of bounds timestamps are an artifact of timezone nonsense
+
+```
+    cutoff_date = pd.Timestamp('2020-01-01', tz='UTC')
+    future_date = pd.Timestamp.now(tz='UTC')
+```
+
+All fixed now that tz='Africa/Johannesburg'
+
+---
+
+#### Malformed lines check was nonsense
+
+I queried how the malformed lines checker works, and it gave me a very pretty answer.  
+Then I tested it by manually typing `FROGGY!,FROGGY!,FROGGY!` to the first line of data in sr_hex.csv and ... no malformed lines were found. My froggies are definitely there, because it threw all my other data tests out of whack.
+
+Oh and then it lied to me about the problem. Twice. But we got there in the end.
+
+It happened because Pandas will silently expand the dataframe on encountering this kind of failure. The initial code written by Opus4.5 did not account for this.
+
+We've handled it by adding explicit column expectations. It's rustic but readable and unambiguous.
+:frog: :frog: :frog:
+
+---
+
+#### Sample records of validation issues
+
+I was supposed to get some sample lines of any problematic data, so I can see it for myself. 
+Unfortunately Opus4.5 wrote something that only looks at out of bounds coordinates.
+We've updated it to look at ALL data validation checks, print a short table of records that fail validation per type of failure (and grouped lat/long tests together because they generally fail together).
