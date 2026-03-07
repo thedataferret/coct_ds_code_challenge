@@ -166,3 +166,16 @@ Additional step now added to check the timestamp parsing.
 I was supposed to get some sample lines of any problematic data, so I can see it for myself. 
 Unfortunately Opus4.5 wrote something that only looks at out of bounds coordinates.
 I've updated it to look at ALL data validation checks, print a short table of records that fail validation per type of failure (and grouped lat/long tests together because they generally fail together).
+
+---
+
+#### Manual calculation of centroids when they are very available
+
+I caught the AI calculating the centroids of the polygons, oh dear
+```
+# Get center of the polygons for map initialization (mean of all bounds)
+map_center = [
+    hex_polygons_plot.geometry.centroid.y.mean(),
+    hex_polygons_plot.geometry.centroid.x.mean(),
+]
+```
