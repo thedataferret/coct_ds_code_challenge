@@ -1,6 +1,8 @@
 ## AI Work Summary
 
 This document summarises how I used AI in my assignment. 
+In total I used just over 13 million tokens, 83,000 of them were output tokens.
+Total "cost" was about $14.15 which was well covered by my Cursor Pro subscription.
 
 I started by opening all the data files and just visually inspecting them. I took notes on the side about what the structure seemed to be, and what methods I might use to test those assumptions, and test for common data quality issues that I know from long, hard-earned, often stressful experience.
 
