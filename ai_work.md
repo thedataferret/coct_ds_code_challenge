@@ -137,6 +137,7 @@ Another data test issue - the 44 out of bounds timestamps are an artifact of tim
 ```
 
 All fixed now that tz='Africa/Johannesburg'
+Any time that Opus touches the code, it resets it back to UTC and I have to do this again.
 
 ---
 
@@ -179,3 +180,14 @@ map_center = [
     hex_polygons_plot.geometry.centroid.x.mean(),
 ]
 ```
+---
+
+#### Truly awful mean / median error
+
+Opus4.5 calculated and displayed the mean, median and standard deviations on my histogram of H3 Hexes and binned service requests. But it was the mean, median and standard deviations OF THE HISTOGRAM not the population. 
+```
+mean_val = hex_request_counts.mean()
+std_val = hex_request_counts.std()
+median_val = hex_request_counts.median()
+```
+I went on to reference these incorrectly later, because I read them off my beautiful chart.
