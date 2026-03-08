@@ -1,5 +1,18 @@
 # Ignore macOS metadata files
 .DS_Store
 
-# Ignore the raw_data folder
+# Ignore the assignment readme
+CoCT.README.MD
+
+# Data files (download from S3 - see README.md)
 raw_data/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Virtual environment
+myenv/
+venv/
+.venv/
